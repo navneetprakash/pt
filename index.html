@@ -110,9 +110,8 @@
     nav button.tool { font-weight: 500; font-size: 13px; padding: 7px 11px }
     nav button.tool.on { color: var(--acc); background: var(--acc2) }
     nav .sep { flex: 1 }
-    #health { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 5px; vertical-align: 1px }
-    #health.ok { background: var(--ok) }
-    #health.bad { background: var(--err) }
+    .selfcheck { max-width: 1500px; margin: 16px auto 0; padding: 0 24px }
+    .selfcheck div { background: var(--errb); color: var(--err); border: 1px solid var(--err); border-radius: var(--r); padding: 12px 16px; font-weight: 600 }
     .theme {
       display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: var(--card);
       color: var(--ink2); border-radius: 999px; padding: 5px 6px 5px 12px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer
@@ -259,6 +258,7 @@
     .oh .segc+.btn { margin-left: 6px }
     label .count { margin-left: 6px; vertical-align: 1px }
 
+.editing { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--acc2); color: var(--ink); border: 1px solid var(--acc3); border-radius: 10px; padding: 9px 12px; margin: -4px 0 16px; font-size: 13px }
     /* ===== Small screens ===== */
     @media(max-width:720px) {
       header { position: static }
@@ -285,12 +285,13 @@
         </div>
         <span class="sep"></span>
         <div class="tools">
-          <button data-tab="check" class="tool">Check wording</button><button data-tab="log" class="tool">Saved</button><button data-tab="tests" class="tool">Tests <span id="health"></span></button>
+          <button data-tab="check" class="tool">Check wording</button><button data-tab="log" class="tool">Saved</button>
         </div>
       </nav>
       <button type="button" class="theme" id="themeToggle" aria-pressed="false"><span id="themeLabel">Dark mode</span><span class="sw" aria-hidden="true"></span></button>
     </div>
   </header>
+  <div class="selfcheck" id="selfcheck" hidden></div>
   <main>
     <section class="card" id="form"></section>
     <section class="out" id="out"></section>
@@ -331,7 +332,7 @@
       [/\bEsp\b\.?/g, 'Esplanade'], [/\bSq\b\.?/g, 'Square'], [/\bCl\b\.?/g, 'Close'], [/\bHts\b\.?/g, 'Heights'], [/\bGdns\b\.?/g, 'Gardens'], [/\bMwy\b\.?/g, 'Motorway']];
     const NOT_STREET = /^(Opp|Opposite|Outside|Near|Nr|Cnr|Corner|Stop|At|On|Via|By)$/i;
     // Words that follow "St" when it means Saint (St Heliers, Mount St John, St Lukes). Anything else after "St" is a street.
-    const SAINT = /^(Heliers|John|Johns|Lukes|Luke|Marys|Mary|Andrews|Vincent|Vincents|Georges|George|Stephens|Pauls|Paul|Kevins|Benedicts|James|Patricks|Albans|Clair|Aubyn|Leonards|Michaels|Peters|Annes|Margarets|Cuthberts|Columbas|Josephs|Dominics|Francis|Heliers)\b/;
+    const SAINT = /^(Heliers|John|Johns|Lukes|Luke|Marys|Mary|Andrews|Vincent|Vincents|Georges|George|Stephens|Pauls|Paul|Kevins|Benedicts|James|Patricks|Albans|Clair|Aubyn|Leonards|Michaels|Peters|Annes|Margarets|Cuthberts|Columbas|Josephs|Dominics|Francis)\b/;
     function fullNames(t) {
       let r = String(t || '');
       for (const [re, full] of ABBR) r = r.replace(re, full);
@@ -346,7 +347,6 @@
       const rest = parts.slice(1).filter(x => !/^((auckland|new zealand|nz)(\s+\d{4})?|\d{4})$/i.test(x));
       return { road: fullNames(parts[0]), suburb: fullNames(rest.join(', ') || String(suburb || '').trim()) };
     }
-    // "outside 12 Main Road" -> "outside 12 Main Road"; "12 Main Road" -> "at 12 Main Road"; "opp 5 X Road" -> "opposite 5 X Road"
     function atPlace(t) { const x = String(t || '').trim().replace(/^at\s+/i, '').replace(/^opp\.?\s+/i, 'opposite '); return /^(outside|opposite|near|beside|in front of|behind|on|across from)\b/i.test(x) ? x : 'at ' + x; }
     const fullFields = (s, keys) => { const o = { ...s }; for (const k of keys) if (typeof o[k] === 'string') o[k] = fullNames(o[k]); return o; };
     const listJ = (a, c) => a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' ' + c + ' ' + a[a.length - 1];
@@ -881,7 +881,7 @@
         exp: { title: 'Lift not working: Middlemore Train Station - Platform 2', body: 'The lift at Middlemore Train Station on Platform 2 for trains heading to Pukekohe and Manukau is not working right now. The nearest accessible stations are Papatoetoe or Ōtāhuhu. An update will be shared when it is fixed.' }
       },
       { name: 'Checker catches banned terms', run: () => ({ body: lint('Trains will terminate at 14:30 due to a trespasser near Britomart', 'body', 'train').map(x => x.hit).join('|') }), exp: { body: 'due to|terminate|14:30|trespasser|Britomart' } },
-      { name: 'Full names: Saint names and lower case', run: () => ({ body: ['Mt St John Ave', 'Great South rd', 'Queen st', 'St Lukes Rd', 'Victoria St West', 'Opp St Heliers Bay Rd'].map(fullNames).join(' | ') + ' / ' + lint('Stop 1 - Mount St John Avenue', 'body', 'bus').length }), exp: { body: 'Mount St John Avenue | Great South Road | Queen Street | St Lukes Road | Victoria Street West | Opp St Heliers Bay Road / 0' } },
+      { name: 'Full names: Saint names and lower case', run: () => ({ body: ['Mt St John Ave', 'Great South rd', 'Queen st', 'St Lukes Rd', 'Victoria St West', 'Opp St Heliers Bay Rd', 'Mount St'].map(fullNames).join(' | ') + ' / ' + lint('Stop 1 - Mount St John Avenue', 'body', 'bus').length }), exp: { body: 'Mount St John Avenue | Great South Road | Queen Street | St Lukes Road | Victoria Street West | Opp St Heliers Bay Road | Mount Street / 0' } },
       { name: 'Temporary stop wording', run: () => ({ body: ['outside 12 Main St', '12 Main St', 'at 12 Main St', 'opp 5 Queen St'].map(t => busOut({ ...BUS0, tpl: 'planned', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - A', temp: t, d1: '2026-11-10', d2: '2026-11-10', t1: '09:00', t2: '15:00' }).pid.split('. ').pop()).join(' | ') }), exp: { body: 'A temporary stop has been set up outside 12 Main Street. | A temporary stop has been set up at 12 Main Street. | A temporary stop has been set up at 12 Main Street. | A temporary stop has been set up opposite 5 Queen Street.' } },
       { name: 'Link services typed in words', run: () => ({ body: [routesFmt('Inner Link, 70'), routesFmt('OUT'), routesFmt('70 and 75'), routesFmt('City Link')].join(' | ') }), exp: { body: 'Route 70 and Inner Link | Outer Link | Routes 70 and 75 | City Link' } },
       { name: 'Train PID keeps "about"', run: () => ({ pid: trainOut({ ...T0, lines: ['EW'], a: 'Henderson', cause: 'track issue', blocks: [{ type: 'freq', line: 'EW', min: '20', about: true }] }).pid }), exp: { pid: 'Track issue near Henderson: E-W trains run about every 20 min. Expect delays. Check the destination before you board.' } },
@@ -945,7 +945,11 @@
       fac: { tpl: 'down', asset: 'Lift', station: '', tloc: '', detail: '', near: '', alt: '', cause: 'technical issue', subject: '', impact: '' },
       check: { text: '', ch: 'body', mode: 'train', raw: '' }
     };
-    let TAB = 'train', LAST = null, CUR_PRESET = '';
+    let TAB = 'train', LAST = null, CUR_PRESET = '', EDITING = null;   // EDITING = { id, mode, at } while a saved message is open
+    const MODE_LABEL = { train: 'Train', bus: 'Bus', ferry: 'Ferry', fac: 'Facilities' };
+    const clone = o => JSON.parse(JSON.stringify(o));
+    const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    function savedList() { return store.get('ncs-log', []).map(x => x.id ? x : { ...x, id: newId() }); }
 
     // ---------- TRAIN ----------
     const BLOCK_TYPES = [['detour', 'Detour'], ['direct', 'Run directly'], ['shortened', 'Shortened (end at)'], ['skip', 'Stations not served'], ['notrun', 'Will not run between'], ['shuttle', 'Shuttle train'], ['freq', 'Frequency'], ['platform', 'Platform change']];
@@ -1073,13 +1077,20 @@
   <div class="row"><span class="pill ${p === r.length ? 'ok' : 'err'}">${p} / ${r.length} golden tests passing</span><span class="pill ${a.bad.length ? 'err' : 'ok'}">Audit: ${a.count} combinations · ${a.bad.length} rule errors</span></div>
   ${a.bad.length ? `<div class="diff" style="margin-top:8px">${a.bad.map(esc).join('\n')}</div>` : ''}
   <p class="note">The audit generates every cause × template × stage (and every train impact type) and runs each output through the checker.</p>
-  <table style="margin-top:12px">${r.map(t => `<tr><td>${t.pass ? '✅' : '❌'}</td><td>${esc(t.name)}${t.fails.map(f => `<div class="diff">${esc(f.k)}\nGot: ${esc(f.got)}\nExpected: ${esc(f.exp)}</div>`).join('')}</td></tr>`).join('')}</table>`;
+  <table style="margin-top:12px">${r.map(t => `<tr><td><span class="pill ${t.pass ? 'ok' : 'err'}">${t.pass ? 'Pass' : 'Fail'}</span></td><td>${esc(t.name)}${t.fails.map(f => `<div class="diff">${esc(f.k)}\nGot: ${esc(f.got)}\nExpected: ${esc(f.exp)}</div>`).join('')}</td></tr>`).join('')}</table>`;
     }
     function logForm() {
-      const L = store.get('ncs-log', []);
-      return `<h2>Saved messages</h2><p class="sub">Stored in this browser only.</p>${L.length ? '' : '<p class="note">Nothing saved yet. Use "Save to log" on any output.</p>'}
-  <table>${L.map((x, i) => `<tr><td style="white-space:nowrap;color:var(--mut)">${esc(x.at)}</td><td><b>${esc(x.title)}</b><div class="note">${esc(x.mode)}</div></td><td><button class="btn ghost sm" data-logcopy="${i}">Copy</button></td></tr>`).join('')}</table>
-  ${L.length ? '<button class="btn ghost sm" id="logClear" style="margin-top:10px">Clear log</button>' : ''}`;
+      const L = savedList(), q = (ST.logq || '').toLowerCase(), V = L.filter(x => !q || (x.title + ' ' + x.text).toLowerCase().includes(q));
+      return `<h2>Saved messages</h2><p class="sub">Stored in this browser only (latest 50). <b>Edit</b> opens the message in its form so you can change it and save it again.</p>
+  ${L.length ? `<input id="logq" placeholder="Search saved messages" value="${esc(ST.logq || '')}" style="margin-bottom:12px">` : '<p class="note">Nothing saved yet. Use "Save" on any output.</p>'}
+  <table>${V.map(x => `<tr${EDITING && EDITING.id === x.id ? ' style="background:var(--acc2)"' : ''}><td style="white-space:nowrap;color:var(--mut)">${esc(x.at)}${x.edited ? `<div class="note">Edited ${esc(x.edited)}</div>` : ''}</td><td><b>${esc(x.title)}</b><div class="note">${esc(MODE_LABEL[x.mode] || x.mode)}</div></td>
+    <td style="white-space:nowrap;text-align:right">${x.state ? `<button class="btn sm" data-logedit="${x.id}">Edit</button> ` : '<span class="note" title="Saved before editing was added">Copy only</span> '}<button class="btn ghost sm" data-logcopy="${x.id}">Copy</button> <button class="btn ghost sm" data-logdel="${x.id}" aria-label="Delete">Delete</button></td></tr>`).join('')}</table>
+  ${L.length && !V.length ? '<p class="note">No saved messages match.</p>' : ''}
+  ${L.length ? '<button class="btn ghost sm" id="logClear" style="margin-top:12px">Clear all</button>' : ''}`;
+    }
+    function editBanner() {
+      if (!EDITING || EDITING.mode !== TAB) return '';
+      return `<div class="editing"><span>Editing saved message from ${esc(EDITING.at)}. <b>Update saved</b> replaces it.</span><button class="linkbtn" id="stopEdit">Stop editing</button></div>`;
     }
 
     // ---------- OUTPUT ----------
@@ -1115,14 +1126,14 @@
         idCard = `<div class="oc internal"><div class="oh">Stop numbers<span class="count"><b>${n}</b> stop${n > 1 ? 's' : ''} affected</span><span class="n">Internal use only</span><div class="segc">${[['comma', 'Comma'], ['line', 'New line'], ['space', 'Space']].map(([k, l]) => `<button type="button" data-idsep="${k}" class="${sep === k ? 'on' : ''}">${l}</button>`).join('')}</div><button class="btn ghost sm" data-copy="ids">Copy</button></div><div class="ids">${esc(LAST.ids)}</div></div>`;
       }
       const sc = document.getElementById('stopCount'); if (sc && TAB === 'bus') { const n = (o.stopIds || []).length; sc.className = n ? 'count' : ''; sc.innerHTML = n ? `<b>${n}</b> stop${n > 1 ? 's' : ''}` : ''; }
-      out.innerHTML = `<div class="row"><span class="pill ${errs ? 'err' : 'ok'}">${errs ? errs + ' issue(s) to fix before copying' : 'Ready to copy'}</span><span style="margin-left:auto"></span><button class="btn ghost sm" id="save">Save to log</button><button class="btn sm" id="copyAll">Copy all</button></div>
+      out.innerHTML = `<div class="row"><span class="pill ${errs ? 'err' : 'ok'}">${errs ? errs + ' issue(s) to fix before copying' : 'Ready to copy'}</span><span style="margin-left:auto"></span>${EDITING && EDITING.mode === TAB ? '<button class="btn ghost sm" id="saveNew">Save as new</button><button class="btn ghost sm" id="save">Update saved</button>' : '<button class="btn ghost sm" id="save">Save</button>'}<button class="btn sm" id="copyAll">Copy all</button></div>
   ${o.flags && o.flags.length ? `<div class="flags">${o.flags.map(f => `<div>⚑ ${esc(f)}</div>`).join('')}</div>` : ''}${cards}${idCard}`;
     }
     function allText(o) { return [o.title, o.body, o.pid].filter(Boolean).join('\n\n'); }
 
     // ---------- RENDER + EVENTS ----------
     const FORMS = { train: trainForm, bus: busForm, ferry: ferryForm, fac: facForm, check: checkForm, tests: testsForm, log: logForm };
-    function render() { $('#form').innerHTML = FORMS[TAB](); renderOut(); }
+    function render() { $('#form').innerHTML = editBanner() + FORMS[TAB](); renderOut(); }
     const RERENDER = new Set(['format', 'stage', 'locType', 'tpl', 'effect', 'allDay']);
 
     // ===== Date and time popovers =====
@@ -1227,7 +1238,7 @@
     });
     document.addEventListener('click', e => {
       const t = e.target.closest('button'); if (!t) return;
-      if (t.dataset.tab) { closePop(); TAB = t.dataset.tab; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b === t)); render(); return; }
+      if (t.dataset.tab) { closePop(); TAB = t.dataset.tab; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t.dataset.tab)); render(); return; }
       const s = ST.train;
       if (t.dataset.line) {
         const k = t.dataset.line; s.lines = s.lines.includes(k) ? s.lines.filter(x => x !== k) : Object.keys(LINES).filter(x => x === k || s.lines.includes(x));
@@ -1238,13 +1249,31 @@
       if (t.dataset.pick !== undefined) { const b = s.blocks[+t.dataset.pick], x = t.dataset.st; b.skips = b.skips || []; b.skips = b.skips.includes(x) ? b.skips.filter(y => y !== x) : [...b.skips, x]; render(); return; }
       if (t.dataset.copy) { if (LAST && LAST[t.dataset.copy]) copy(LAST[t.dataset.copy]); return; }
       if (t.id === 'copyAll') { if (LAST) copy(allText(LAST)); return; }
-      if (t.id === 'save') { if (!LAST) return; const L = store.get('ncs-log', []); L.unshift({ at: new Date().toLocaleString('en-NZ'), mode: TAB, title: LAST.title, text: allText(LAST) }); toast(store.set('ncs-log', L.slice(0, 50)) ? 'Saved' : 'Could not save: this browser blocks local storage'); return; }
-      if (t.dataset.logcopy) { const x = store.get('ncs-log', [])[+t.dataset.logcopy]; if (x) copy(x.text); return; }
-      if (t.id === 'logClear') { if (!confirm('Clear all saved messages in this browser?')) return; store.del('ncs-log'); render(); return; }
+      if (t.id === 'save' || t.id === 'saveNew') {
+        if (!LAST) return;
+        const L = savedList(), now = new Date().toLocaleString('en-NZ'), entry = { mode: TAB, title: LAST.title, text: allText(LAST), state: clone(ST[TAB]), preset: TAB === 'train' ? CUR_PRESET : '' };
+        const i = t.id === 'save' && EDITING && EDITING.mode === TAB ? L.findIndex(x => x.id === EDITING.id) : -1;
+        if (i > -1) { L[i] = { ...L[i], ...entry, edited: now }; L.unshift(L.splice(i, 1)[0]); }
+        else { const id = newId(); L.unshift({ id, at: now, ...entry }); EDITING = { id, mode: TAB, at: now }; }
+        if (!store.set('ncs-log', L.slice(0, 50))) { toast('Could not save: this browser blocks local storage'); return; }
+        toast(i > -1 ? 'Saved message updated' : 'Saved'); render(); return;
+      }
+      if (t.dataset.logcopy) { const x = savedList().find(y => y.id === t.dataset.logcopy); if (x) copy(x.text); return; }
+      if (t.dataset.logedit) {
+        const x = savedList().find(y => y.id === t.dataset.logedit); if (!x || !x.state || !ST[x.mode]) return;
+        closePop(); ST[x.mode] = clone(x.state); if (x.mode === 'train') CUR_PRESET = x.preset || '';
+        EDITING = { id: x.id, mode: x.mode, at: x.at }; TAB = x.mode;
+        document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === TAB));
+        render(); window.scrollTo(0, 0); toast('Opened for editing'); return;
+      }
+      if (t.dataset.logdel) { const x = savedList().find(y => y.id === t.dataset.logdel); if (!x || !confirm('Delete "' + x.title + '"?')) return; store.set('ncs-log', savedList().filter(y => y.id !== x.id)); if (EDITING && EDITING.id === x.id) EDITING = null; render(); return; }
+      if (t.id === 'stopEdit') { EDITING = null; render(); return; }
+      if (t.id === 'logClear') { if (!confirm('Clear all saved messages in this browser?')) return; store.del('ncs-log'); EDITING = null; render(); return; }
       if (t.id === 'busParse') { parseRoadworks($('#busPaste').value); render(); return; }
     });
     function onField(e) {
       const el = e.target;
+      if (el.id === 'logq') { ST.logq = el.value; const pos = el.selectionStart; render(); const q = $('#logq'); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
       if (el.id === 'preset') { CUR_PRESET = el.value; if (!el.value) ST.train = { ...T0, lines: ['EW'], cause: 'track issue', blocks: [] }; if (el.value) ST.train = JSON.parse(JSON.stringify({ ...T0, ...PRESETS[el.value].st })); render(); return; }
       const m = el.dataset.m, k = el.dataset.k; if (!m) return;
       const v = el.type === 'checkbox' ? el.checked : el.value;
@@ -1270,7 +1299,13 @@
     function syncTheme() { const d = document.documentElement.getAttribute('data-theme') === 'dark', b = $('#themeToggle'); b.setAttribute('aria-pressed', d); b.title = d ? 'Switch to light mode' : 'Switch to dark mode'; }
     $('#themeToggle').addEventListener('click', () => { const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); try { localStorage.setItem('ncs-theme', n); } catch (e) { } syncTheme(); });
     syncTheme();
-    (() => { const r = runTests(), ok = r.every(x => x.pass) && !runAudit().bad.length; const h = $('#health'); h.className = ok ? 'ok' : 'bad'; h.title = ok ? 'All checks passing' : 'Checks failing: open Tests'; })();
+    // Self-check runs silently on every load. Staff only see something if a rule change has broken the wording.
+    // Maintainers: open the file with #tests on the end of the address to see the full test results.
+    (() => {
+      const r = runTests(), a = runAudit(), ok = r.every(x => x.pass) && !a.bad.length;
+      if (!ok) { const b = $('#selfcheck'); b.hidden = false; b.innerHTML = '<div>This tool failed its built-in wording check, so some messages may be wrong. Do not use it for live comms until it is fixed. <button class="btn sm" data-tab="tests" style="margin-left:8px">See details</button></div>'; }
+      if (location.hash === '#tests') { TAB = 'tests'; document.querySelectorAll('#nav button').forEach(b => b.classList.remove('on')); }
+    })();
     render();
   </script>
 </body>
