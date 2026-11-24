@@ -7,7 +7,7 @@
   <title>AT Network Comms Studio</title>
   <script>
     // Apply the saved theme before the page draws, so there is no flash.
-    (function () { try { var t = localStorage.getItem('ncs-theme'); if (['light', 'dark', 'command', 'cyber', 'gta'].indexOf(t) < 0) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', t); } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); } })();
+    (function () { try { var t = localStorage.getItem('ncs-theme'); if (['light', 'dark', 'command', 'cyber', 'gta', 'eyecare'].indexOf(t) < 0) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', t); } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); } })();
   </script>
   <style>
     /* ===== Theme tokens ===== */
@@ -179,48 +179,89 @@
       [data-theme="cyber"] ::selection { background: rgba(255, 43, 214, .35) }
 
 
-        /* ===== GTA 6 theme: Vice City sunset. Deep purple night, hot pink and sunset orange, ocean teal, bold italic headings ===== */
-        [data-theme="gta"] {
-          color-scheme: dark;
-          --bg: #140a24; --bg2: #1c1030; --card: #1e1233; --raised: #26173f; --ink: #fff3f8; --ink2: #f2d9e8; --mut: #c4a5c9;
-          --line: #3a2357; --line2: #52306f; --acc: #ff4fa3; --acc-ink: #1a0a1e; --acc2: rgba(255, 79, 163, .14); --acc3: rgba(255, 79, 163, .3);
-          --sun: #ff9a3c; --sea: #2de2e6;
-          --ok: #4cf0b0; --okb: rgba(76, 240, 176, .12); --err: #ff6b7d; --errb: rgba(255, 107, 125, .14); --warn: #ffc857; --warnb: rgba(255, 200, 87, .1); --warnl: rgba(255, 200, 87, .38);
-          --hdr: rgba(20, 10, 36, .9); --EW: #ff5470; --SC: #ff9a3c; --OW: #b88cff; --r: 12px; --r2: 8px;
-          --sh: 0 2px 10px rgba(0, 0, 0, .35), 0 0 0 1px rgba(255, 79, 163, .06); --sh2: 0 18px 50px rgba(0, 0, 0, .65); --focus: 0 0 0 3px rgba(45, 226, 230, .4);
-        }
-        [data-theme="gta"] body { background: radial-gradient(1100px 380px at 50% -140px, rgba(255, 154, 60, .32), transparent 70%), radial-gradient(900px 420px at 100% 0, rgba(255, 79, 163, .2), transparent 70%), linear-gradient(180deg, #1d0d33 0%, #140a24 45%, #0d0a22 100%); background-attachment: fixed }
-        [data-theme="gta"] header { border-bottom: 0; box-shadow: 0 2px 0 0 transparent; background-image: linear-gradient(90deg, rgba(255, 154, 60, .16), rgba(255, 79, 163, .16) 50%, rgba(45, 226, 230, .12)) }
-        [data-theme="gta"] header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: linear-gradient(90deg, var(--sun), var(--acc) 50%, var(--sea)) }
-        [data-theme="gta"] .brand { font-style: italic; font-weight: 800; font-size: 16px; letter-spacing: .01em; background: linear-gradient(90deg, var(--sun), var(--acc)); -webkit-background-clip: text; background-clip: text; color: transparent }
-        [data-theme="gta"] .brand span { font-style: normal; font-weight: 600; color: var(--sea); -webkit-text-fill-color: var(--sea) }
-        [data-theme="gta"] .card { border-color: var(--line2); background: linear-gradient(90deg, var(--sun), var(--acc) 50%, var(--sea)) top / 100% 3px no-repeat, var(--card) }
-        [data-theme="gta"] .card h2 { font-style: italic; font-weight: 800; font-size: 17px; color: var(--sun); letter-spacing: .005em }
-        [data-theme="gta"] .oc { border-color: var(--line2) }
-        [data-theme="gta"] .oh { background: linear-gradient(90deg, rgba(255, 79, 163, .14), rgba(45, 226, 230, .06)); color: var(--sea) }
-        [data-theme="gta"] .tabs { border-color: var(--line2) }
-        [data-theme="gta"] .tabs button.on { background: linear-gradient(135deg, var(--sun), var(--acc)); color: #1a0a1e; box-shadow: 0 4px 14px rgba(255, 79, 163, .35) }
-        [data-theme="gta"] nav button.tool.on { color: var(--sea); background: rgba(45, 226, 230, .12) }
-        [data-theme="gta"] .btn:not(.ghost) { background: linear-gradient(135deg, var(--sun), var(--acc)); color: #1a0a1e; box-shadow: 0 4px 14px rgba(255, 79, 163, .3) }
-        [data-theme="gta"] .btn.ghost { color: var(--sea); background: rgba(45, 226, 230, .1) }
-        [data-theme="gta"] .btn.ghost:hover { background: rgba(45, 226, 230, .2) }
-        [data-theme="gta"] .segc button.on { background: var(--acc); color: #1a0a1e }
-        [data-theme="gta"] .picker button.on, [data-theme="gta"] .cal-g button.sel, [data-theme="gta"] .tp-g button.sel, [data-theme="gta"] .tp-ap button.sel { background: var(--acc); color: #1a0a1e; border-color: var(--acc) }
-        [data-theme="gta"] .count { background: rgba(45, 226, 230, .12); color: var(--sea) }
-        [data-theme="gta"] label { color: var(--ink2) }
-        [data-theme="gta"] ::selection { background: rgba(255, 154, 60, .4) }
-      /* ===== Cyberpunk cursor: neon arrow (falls back to the normal cursor if custom cursors are blocked) ===== */
-      [data-theme="cyber"] { --cur: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMS40IDEuMiknIGZpbGw9J25vbmUnIHN0cm9rZT0nI2ZmMmJkNicgc3Ryb2tlLXdpZHRoPSczJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBvcGFjaXR5PScuOCcvPjxwYXRoIGQ9J001IDQgTDUgMjUgTDEwLjUgMTkuNSBMMTQuNSAyOCBMMTguNSAyNi4yIEwxNC42IDE3LjggTDIyLjUgMTcuOCBaJyBmaWxsPScjMGEwNjE0JyBzdHJva2U9JyMwMGU1ZmYnIHN0cm9rZS13aWR0aD0nMS44JyBzdHJva2UtbGluZWpvaW49J3JvdW5kJy8+PC9zdmc+) 5 4, auto; --cur-pt: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMS40IDEuMiknIGZpbGw9JyNmZjJiZDYnIHN0cm9rZT0nI2ZmMmJkNicgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBvcGFjaXR5PScuNzUnLz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgZmlsbD0nIzAwZTVmZicgc3Ryb2tlPScjZmZmZmZmJyBzdHJva2Utd2lkdGg9JzEuMicgc3Ryb2tlLWxpbmVqb2luPSdyb3VuZCcvPjwvc3ZnPg==) 5 4, pointer; --cur-tx: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxIDEpJyBvcGFjaXR5PScuODUnPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmYyYmQ2JyBzdHJva2Utd2lkdGg9JzMuMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9nPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMDBlNWZmJyBzdHJva2Utd2lkdGg9JzEuOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+) 16 16, text }
-      [data-theme="cyber"], [data-theme="cyber"] body { cursor: var(--cur) }
-      [data-theme="cyber"] :is(button, a, select, summary, label.chk, .chk input, input[type="checkbox"], .iss, mark.cm, .pk, .cal-g button, .tp-g button, .tp-ap button, .tp-q button, .seg button, .segc button, .chip button, .picker button, .linkbtn, .theme-pick select):not(:disabled) { cursor: var(--cur-pt) }
-      [data-theme="cyber"] :is(input:not([type="checkbox"]), textarea) { cursor: var(--cur-tx) }
-      [data-theme="cyber"] .btn:disabled { cursor: not-allowed }
-      /* ===== GTA 6 cursor: aim dot (falls back to the normal cursor if custom cursors are blocked) ===== */
-      [data-theme="gta"] { --cur: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc3JyBmaWxsPSdub25lJyBzdHJva2U9JyMxYTBhMWUnIHN0cm9rZS13aWR0aD0nMy40JyBvcGFjaXR5PScuNTUnLz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc3JyBmaWxsPSdub25lJyBzdHJva2U9JyNmZjRmYTMnIHN0cm9rZS13aWR0aD0nMS44Jy8+PGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMi42JyBmaWxsPScjMmRlMmU2JyBzdHJva2U9JyMxYTBhMWUnIHN0cm9rZS13aWR0aD0nMScvPjwvc3ZnPg==) 16 16, auto; --cur-pt: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc4LjUnIGZpbGw9J3JnYmEoMjU1LDE1NCw2MCwuMiknIHN0cm9rZT0nI2ZmOWEzYycgc3Ryb2tlLXdpZHRoPScyJy8+PGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMy4yJyBmaWxsPScjZmY0ZmEzJyBzdHJva2U9JyNmZmZmZmYnIHN0cm9rZS13aWR0aD0nMScvPjwvc3ZnPg==) 16 16, pointer; --cur-tx: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxIDEpJyBvcGFjaXR5PScuODUnPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmY0ZmEzJyBzdHJva2Utd2lkdGg9JzMuMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9nPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmY5YTNjJyBzdHJva2Utd2lkdGg9JzEuOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+) 16 16, text }
-      [data-theme="gta"], [data-theme="gta"] body { cursor: var(--cur) }
-      [data-theme="gta"] :is(button, a, select, summary, label.chk, .chk input, input[type="checkbox"], .iss, mark.cm, .pk, .cal-g button, .tp-g button, .tp-ap button, .tp-q button, .seg button, .segc button, .chip button, .picker button, .linkbtn, .theme-pick select):not(:disabled) { cursor: var(--cur-pt) }
-      [data-theme="gta"] :is(input:not([type="checkbox"]), textarea) { cursor: var(--cur-tx) }
-      [data-theme="gta"] .btn:disabled { cursor: not-allowed }
+    /* ===== GTA 6 theme: Vice City sunset. Deep purple night, hot pink and sunset orange, ocean teal, bold italic headings ===== */
+    [data-theme="gta"] {
+      color-scheme: dark;
+      --bg: #140a24; --bg2: #1c1030; --card: #1e1233; --raised: #26173f; --ink: #fff3f8; --ink2: #f2d9e8; --mut: #c4a5c9;
+      --line: #3a2357; --line2: #52306f; --acc: #ff4fa3; --acc-ink: #1a0a1e; --acc2: rgba(255, 79, 163, .14); --acc3: rgba(255, 79, 163, .3);
+      --sun: #ff9a3c; --sea: #2de2e6;
+      --ok: #4cf0b0; --okb: rgba(76, 240, 176, .12); --err: #ff6b7d; --errb: rgba(255, 107, 125, .14); --warn: #ffc857; --warnb: rgba(255, 200, 87, .1); --warnl: rgba(255, 200, 87, .38);
+      --hdr: rgba(20, 10, 36, .9); --EW: #ff5470; --SC: #ff9a3c; --OW: #b88cff; --r: 12px; --r2: 8px;
+      --sh: 0 2px 10px rgba(0, 0, 0, .35), 0 0 0 1px rgba(255, 79, 163, .06); --sh2: 0 18px 50px rgba(0, 0, 0, .65); --focus: 0 0 0 3px rgba(45, 226, 230, .4);
+    }
+    [data-theme="gta"] body { background: radial-gradient(1100px 380px at 50% -140px, rgba(255, 154, 60, .32), transparent 70%), radial-gradient(900px 420px at 100% 0, rgba(255, 79, 163, .2), transparent 70%), linear-gradient(180deg, #1d0d33 0%, #140a24 45%, #0d0a22 100%); background-attachment: fixed }
+    [data-theme="gta"] header { border-bottom: 0; background-image: linear-gradient(90deg, rgba(255, 154, 60, .16), rgba(255, 79, 163, .16) 50%, rgba(45, 226, 230, .12)) }
+    [data-theme="gta"] header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: linear-gradient(90deg, var(--sun), var(--acc) 50%, var(--sea)) }
+    [data-theme="gta"] .brand { font-style: italic; font-weight: 800; font-size: 16px; letter-spacing: .01em; background: linear-gradient(90deg, var(--sun), var(--acc)); -webkit-background-clip: text; background-clip: text; color: transparent }
+    [data-theme="gta"] .brand span { font-style: normal; font-weight: 600; color: var(--sea); -webkit-text-fill-color: var(--sea) }
+    [data-theme="gta"] .card { border-color: var(--line2); background: linear-gradient(90deg, var(--sun), var(--acc) 50%, var(--sea)) top / 100% 3px no-repeat, var(--card) }
+    [data-theme="gta"] .card h2 { font-style: italic; font-weight: 800; font-size: 17px; color: var(--sun); letter-spacing: .005em }
+    [data-theme="gta"] .oc { border-color: var(--line2) }
+    [data-theme="gta"] .oh { background: linear-gradient(90deg, rgba(255, 79, 163, .14), rgba(45, 226, 230, .06)); color: var(--sea) }
+    [data-theme="gta"] .tabs { border-color: var(--line2) }
+    [data-theme="gta"] .tabs button.on { background: linear-gradient(135deg, var(--sun), var(--acc)); color: #1a0a1e; box-shadow: 0 4px 14px rgba(255, 79, 163, .35) }
+    [data-theme="gta"] nav button.tool.on { color: var(--sea); background: rgba(45, 226, 230, .12) }
+    [data-theme="gta"] .btn:not(.ghost) { background: linear-gradient(135deg, var(--sun), var(--acc)); color: #1a0a1e; box-shadow: 0 4px 14px rgba(255, 79, 163, .3) }
+    [data-theme="gta"] .btn.ghost { color: var(--sea); background: rgba(45, 226, 230, .1) }
+    [data-theme="gta"] .btn.ghost:hover { background: rgba(45, 226, 230, .2) }
+    [data-theme="gta"] .segc button.on { background: var(--acc); color: #1a0a1e }
+    [data-theme="gta"] .picker button.on, [data-theme="gta"] .cal-g button.sel, [data-theme="gta"] .tp-g button.sel, [data-theme="gta"] .tp-ap button.sel { background: var(--acc); color: #1a0a1e; border-color: var(--acc) }
+    [data-theme="gta"] .count { background: rgba(45, 226, 230, .12); color: var(--sea) }
+    [data-theme="gta"] label { color: var(--ink2) }
+    [data-theme="gta"] ::selection { background: rgba(255, 154, 60, .4) }
+    @media(max-width:720px) { [data-theme="gta"] header { position: relative } }
+    /* ===== Eyecare theme: for long shifts in a dark room. Warm low-blue dark grey (never pure black), soft warm white
+       text (never pure white), high contrast, larger text and spacing, thick clear focus rings, no glow or gradients. ===== */
+    [data-theme="eyecare"] {
+      color-scheme: dark;
+      --bg: #1a1916; --bg2: #22201c; --card: #23211d; --raised: #2a2823; --ink: #ece3d0; --ink2: #ddd3bf; --mut: #b3a994;
+      --line: #3a362f; --line2: #4f4a40; --acc: #e9b45c; --acc-ink: #1a1916; --acc2: rgba(233, 180, 92, .14); --acc3: rgba(233, 180, 92, .32);
+      --ok: #9fd49a; --okb: rgba(159, 212, 154, .13); --err: #f4a08f; --errb: rgba(244, 160, 143, .14); --warn: #ecc86f; --warnb: rgba(236, 200, 111, .11); --warnl: rgba(236, 200, 111, .4);
+      --hdr: #1d1c18; --EW: #e07b6f; --SC: #e3a54e; --OW: #b79ad8; --r: 12px; --r2: 9px;
+      --sh: none; --sh2: 0 14px 40px rgba(0, 0, 0, .55); --focus: 0 0 0 3px #e9b45c;
+    }
+    [data-theme="eyecare"] body { font-size: 15px; line-height: 1.65; letter-spacing: .005em; -webkit-font-smoothing: auto }
+    [data-theme="eyecare"] header { backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid var(--line2) }
+    [data-theme="eyecare"] .brand { font-size: 16px } [data-theme="eyecare"] .brand span { font-size: 12.5px }
+    [data-theme="eyecare"] nav button { font-size: 14.5px }
+    [data-theme="eyecare"] .tabs button.on { background: var(--acc); color: var(--acc-ink); box-shadow: none }
+    [data-theme="eyecare"] nav button.tool.on { color: var(--acc); background: var(--acc2) }
+    [data-theme="eyecare"] .card, [data-theme="eyecare"] .oc { border-color: var(--line2) }
+    [data-theme="eyecare"] .card h2 { font-size: 17.5px; color: var(--acc) }
+    [data-theme="eyecare"] .sub, [data-theme="eyecare"] .note { font-size: 13.5px; color: var(--mut) }
+    [data-theme="eyecare"] label { font-size: 13px; color: var(--ink2) }
+    [data-theme="eyecare"] input:not([type="checkbox"]), [data-theme="eyecare"] select, [data-theme="eyecare"] textarea, [data-theme="eyecare"] .pk { font-size: 15px; padding-top: 10px; padding-bottom: 10px; border-color: var(--line2); background-color: var(--bg2) }
+    [data-theme="eyecare"] input::placeholder, [data-theme="eyecare"] textarea::placeholder { color: #8f8673; opacity: 1 }
+    [data-theme="eyecare"] input:focus, [data-theme="eyecare"] select:focus, [data-theme="eyecare"] textarea:focus { border-color: var(--acc) }
+    [data-theme="eyecare"] :is(button, a, select, input, textarea, summary):focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; box-shadow: none }
+    [data-theme="eyecare"] .ot { font-size: 16px; line-height: 1.7 } [data-theme="eyecare"] .ot.title { font-size: 17px }
+    [data-theme="eyecare"] .oh { font-size: 12.5px; color: var(--ink2); background: var(--bg2) }
+    [data-theme="eyecare"] .btn { font-size: 14px } [data-theme="eyecare"] .btn.sm { font-size: 13px; padding: 5px 12px }
+    [data-theme="eyecare"] .pill, [data-theme="eyecare"] .count { font-size: 13px }
+    [data-theme="eyecare"] .flags { font-size: 14px }
+    [data-theme="eyecare"] .chk { font-size: 14px } [data-theme="eyecare"] input[type="checkbox"], [data-theme="eyecare"] input[type="checkbox"]:focus { width: 18px; height: 18px; padding: 0; border: 0; margin: 0; flex: none }
+    [data-theme="eyecare"] .segc button, [data-theme="eyecare"] .seg button { font-size: 14px }
+    [data-theme="eyecare"] .segc button.on { background: var(--acc); color: var(--acc-ink); box-shadow: none }
+    [data-theme="eyecare"] .picker button { font-size: 13px; padding: 4px 10px }
+    [data-theme="eyecare"] .picker button.on, [data-theme="eyecare"] .cal-g button.sel, [data-theme="eyecare"] .tp-g button.sel, [data-theme="eyecare"] .tp-ap button.sel { background: var(--acc); color: var(--acc-ink); border-color: var(--acc) }
+    [data-theme="eyecare"] .lchip.on.EW, [data-theme="eyecare"] .lchip.on.SC, [data-theme="eyecare"] .lchip.on.OW { color: #1a1916 }
+    [data-theme="eyecare"] .cal-g button { font-size: 14px }
+    [data-theme="eyecare"] .iss-msg { font-size: 14.5px } [data-theme="eyecare"] .iss-change { font-size: 14px }
+    [data-theme="eyecare"] mark.cm.err { box-shadow: inset 0 -3px 0 var(--err) } [data-theme="eyecare"] mark.cm.warn { box-shadow: inset 0 -3px 0 var(--warn) }
+    [data-theme="eyecare"] ::selection { background: rgba(233, 180, 92, .38) }
+    [data-theme="eyecare"] * { scrollbar-color: var(--line2) var(--bg) }
+    /* ===== Cyberpunk cursor: neon arrow (falls back to the normal cursor if custom cursors are blocked) ===== */
+    [data-theme="cyber"] { --cur: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMS40IDEuMiknIGZpbGw9J25vbmUnIHN0cm9rZT0nI2ZmMmJkNicgc3Ryb2tlLXdpZHRoPSczJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBvcGFjaXR5PScuOCcvPjxwYXRoIGQ9J001IDQgTDUgMjUgTDEwLjUgMTkuNSBMMTQuNSAyOCBMMTguNSAyNi4yIEwxNC42IDE3LjggTDIyLjUgMTcuOCBaJyBmaWxsPScjMGEwNjE0JyBzdHJva2U9JyMwMGU1ZmYnIHN0cm9rZS13aWR0aD0nMS44JyBzdHJva2UtbGluZWpvaW49J3JvdW5kJy8+PC9zdmc+) 5 4, auto; --cur-pt: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMS40IDEuMiknIGZpbGw9JyNmZjJiZDYnIHN0cm9rZT0nI2ZmMmJkNicgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBvcGFjaXR5PScuNzUnLz48cGF0aCBkPSdNNSA0IEw1IDI1IEwxMC41IDE5LjUgTDE0LjUgMjggTDE4LjUgMjYuMiBMMTQuNiAxNy44IEwyMi41IDE3LjggWicgZmlsbD0nIzAwZTVmZicgc3Ryb2tlPScjZmZmZmZmJyBzdHJva2Utd2lkdGg9JzEuMicgc3Ryb2tlLWxpbmVqb2luPSdyb3VuZCcvPjwvc3ZnPg==) 5 4, pointer; --cur-tx: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxIDEpJyBvcGFjaXR5PScuODUnPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmYyYmQ2JyBzdHJva2Utd2lkdGg9JzMuMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9nPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMDBlNWZmJyBzdHJva2Utd2lkdGg9JzEuOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+) 16 16, text }
+    [data-theme="cyber"], [data-theme="cyber"] body { cursor: var(--cur) }
+    [data-theme="cyber"] :is(button, a, select, summary, label.chk, .chk input, input[type="checkbox"], .iss, mark.cm, .pk, .cal-g button, .tp-g button, .tp-ap button, .tp-q button, .seg button, .segc button, .chip button, .picker button, .linkbtn, .theme-pick select):not(:disabled) { cursor: var(--cur-pt) }
+    [data-theme="cyber"] :is(input:not([type="checkbox"]), textarea) { cursor: var(--cur-tx) }
+    [data-theme="cyber"] .btn:disabled { cursor: not-allowed }
+    /* ===== GTA 6 cursor: aim dot (falls back to the normal cursor if custom cursors are blocked) ===== */
+    [data-theme="gta"] { --cur: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc3JyBmaWxsPSdub25lJyBzdHJva2U9JyMxYTBhMWUnIHN0cm9rZS13aWR0aD0nMy40JyBvcGFjaXR5PScuNTUnLz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc3JyBmaWxsPSdub25lJyBzdHJva2U9JyNmZjRmYTMnIHN0cm9rZS13aWR0aD0nMS44Jy8+PGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMi42JyBmaWxsPScjMmRlMmU2JyBzdHJva2U9JyMxYTBhMWUnIHN0cm9rZS13aWR0aD0nMScvPjwvc3ZnPg==) 16 16, auto; --cur-pt: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48Y2lyY2xlIGN4PScxNicgY3k9JzE2JyByPSc4LjUnIGZpbGw9J3JnYmEoMjU1LDE1NCw2MCwuMiknIHN0cm9rZT0nI2ZmOWEzYycgc3Ryb2tlLXdpZHRoPScyJy8+PGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMy4yJyBmaWxsPScjZmY0ZmEzJyBzdHJva2U9JyNmZmZmZmYnIHN0cm9rZS13aWR0aD0nMScvPjwvc3ZnPg==) 16 16, pointer; --cur-tx: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz48ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxIDEpJyBvcGFjaXR5PScuODUnPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmY0ZmEzJyBzdHJva2Utd2lkdGg9JzMuMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9nPjxwYXRoIGQ9J00xMiA2IEgyMCBNMTYgNiBWMjYgTTEyIDI2IEgyMCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmY5YTNjJyBzdHJva2Utd2lkdGg9JzEuOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PC9zdmc+) 16 16, text }
+    [data-theme="gta"], [data-theme="gta"] body { cursor: var(--cur) }
+    [data-theme="gta"] :is(button, a, select, summary, label.chk, .chk input, input[type="checkbox"], .iss, mark.cm, .pk, .cal-g button, .tp-g button, .tp-ap button, .tp-q button, .seg button, .segc button, .chip button, .picker button, .linkbtn, .theme-pick select):not(:disabled) { cursor: var(--cur-pt) }
+    [data-theme="gta"] :is(input:not([type="checkbox"]), textarea) { cursor: var(--cur-tx) }
+    [data-theme="gta"] .btn:disabled { cursor: not-allowed }
     /* ===== Layout ===== */
     main { display: grid; grid-template-columns: minmax(380px, 1fr) minmax(380px, 1fr); gap: 22px; padding: 22px 24px 40px; max-width: 1500px; margin: auto }
     @media(max-width:960px) { main { grid-template-columns: 1fr } .out { position: static !important } }
@@ -425,7 +466,6 @@
     /* ===== Scrollbars ===== */
     * { scrollbar-width: thin; scrollbar-color: var(--line2) transparent }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
-    @media(max-width:720px) { [data-theme="gta"] header { position: relative } }
   </style>
 </head>
 
@@ -442,7 +482,7 @@
           <button data-tab="check" class="tool">Check wording</button><button data-tab="log" class="tool">Saved</button>
         </div>
       </nav>
-      <label class="theme-pick"><span>Theme</span><select id="themeSel" aria-label="Theme"><option value="light">Light</option><option value="dark">Dark</option><option value="command">Command centre</option><option value="cyber">Cyberpunk</option><option value="gta">GTA 6</option></select></label>
+      <label class="theme-pick"><span>Theme</span><select id="themeSel" aria-label="Theme"><option value="light">Light</option><option value="dark">Dark</option><option value="command">Command centre</option><option value="cyber">Cyberpunk</option><option value="gta">GTA 6</option><option value="eyecare">Eyecare</option></select></label>
     </div>
   </header>
   <div class="selfcheck" id="selfcheck" hidden></div>
@@ -510,12 +550,12 @@
     function fmtTime(t) { if (!t) return '[TIME]'; let [h, m] = t.split(':').map(Number); if (isNaN(h)) return '[TIME]'; const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + (m ? ':' + String(m).padStart(2, '0') : '') + ap; }
     function fmtDate(d, wd = true) { if (!d) return '[DATE]'; const [y, m, dd] = d.split('-').map(Number); const dt = new Date(Date.UTC(y, m - 1, dd)); return (wd ? DAYS[dt.getUTCDay()] + ' ' : '') + dd + ' ' + MONTHS[m - 1]; }
     // Specific dates: same month -> "Thursday 8 and Monday 12 October"; otherwise each date in full.
-    function fmtDateList(ds) {
+    function fmtDateList(ds, wd = true) {
       ds = [...new Set(ds)].sort(); if (!ds.length) return '[DATE]';
       const sameMonth = ds.every(d => d.slice(0, 7) === ds[0].slice(0, 7));
-      if (!sameMonth || ds.length === 1) return listAnd(ds.map(d => fmtDate(d)));
-      const parts = ds.map(d => fmtDate(d)), last = parts.pop();
-      return listAnd([...parts.map(p => p.split(' ').slice(0, 2).join(' ')), last]);
+      if (!sameMonth || ds.length === 1) return listAnd(ds.map(d => fmtDate(d, wd)));
+      const parts = ds.map(d => fmtDate(d, wd)), last = parts.pop();
+      return listAnd([...parts.map(p => p.split(' ').slice(0, wd ? 2 : 1).join(' ')), last]);
     }
     function shortRange(a, b) { if (!a) return ''; const A = fmtDate(a, false); if (!b || a === b) return A; const B = fmtDate(b, false); return A.split(' ')[1] === B.split(' ')[1] ? A.split(' ')[0] + ' to ' + B : A + ' to ' + B; }
     function mapRawCause(t) { const hits = []; for (const [re, c] of RAW_MAP) if (re.test(t) && !hits.includes(c)) hits.push(c); return hits.length ? hits : ['incident']; }
@@ -707,7 +747,9 @@
       const samePeriods = days === 'split' && tp(periods[0].ad, periods[0].a, periods[0].b) === tp(periods[1].ad, periods[1].a, periods[1].b);
       const timeText = samePeriods ? tp(periods[0].ad, periods[0].a, periods[0].b) : periods.map(p => tp(p.ad, p.a, p.b) + (p.on ? ' on ' + p.on : '')).join(' and ');
       const multi = s.dateMode === 'dates', ds = [...new Set(s.dates || [])].sort();
-      const when = (multi ? 'on ' + fmtDateList(ds) : s.d1 && s.d2 && s.d1 !== s.d2 ? 'from ' + fmtDate(s.d1) + ' to ' + fmtDate(s.d2) : 'on ' + fmtDate(s.d1)) + ', ' + timeText + (s.excl ? ' (excluding ' + s.excl + ')' : '');
+      const whenAt = wd => (multi ? 'on ' + fmtDateList(ds, wd) : s.d1 && s.d2 && s.d1 !== s.d2 ? 'from ' + fmtDate(s.d1, wd) + ' to ' + fmtDate(s.d2, wd) : 'on ' + fmtDate(s.d1, wd)) + ', ' + timeText + (s.excl ? ' (excluding ' + s.excl + ')' : '');
+      // Alerts name the day ("Monday 7 December"); PIDs leave the day name out ("7 December").
+      const when = whenAt(true), whenPid = whenAt(false);
       let o;
       if (t === 'holding') o = { title: title(''), body: 'There ' + be(c) + ' ' + wa(c) + ' ' + place + ' which may cause delays, cancellations or detours. Updates to follow.', pid: null };
       else if (t === 'unplanned' || t === 'update') {
@@ -730,7 +772,7 @@
         b += tail;
         o = {
           title: title(t === 'plannedUpdate' ? 'UPDATE ' : ''), body: b,
-          pid: stops.length ? 'Buses will not stop here due to ' + ovc + ' ' + when + '. Use Journey Planner to find other stops nearby.' + (temp ? ' A temporary stop has been set up ' + atPlace(temp) + '.' : '') : null
+          pid: stops.length ? 'Buses will not stop here due to ' + ovc + ' ' + whenPid + '. Use Journey Planner to find other stops nearby.' + (temp ? ' A temporary stop has been set up ' + atPlace(temp) + '.' : '') : null
         };
         if (overnight) flags.push('Times cross midnight, so "overnight" was added.');
         if (overnight && multi) flags.push('Overnight works: each date listed should be the night the works start.');
@@ -1136,7 +1178,7 @@
       },
       {
         name: 'Bus planned overnight roadworks (§9)', run: () => busOut({ ...BUS0, tpl: 'planned', routes: '27W', street: 'Stamford Park Road', suburb: 'Mt Roskill', cause: 'roadworks', stops: '8694 - Stamford Park Rd > 1700 - 70 Melrose Rd', d1: '2026-10-12', d2: '2026-10-21', t1: '21:00', t2: '05:00' }),
-        exp: { title: 'Detour: Route 27W - Stamford Park Road, Mount Roskill', body: 'There are overnight roadworks on Stamford Park Road in Mount Roskill from Monday 12 October to Wednesday 21 October, between 9pm and 5am.\nBuses will not stop at:\n• Stop 8694 - Stamford Park Road\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to overnight roadworks from Monday 12 October to Wednesday 21 October, between 9pm and 5am. Use Journey Planner to find other stops nearby.' }
+        exp: { title: 'Detour: Route 27W - Stamford Park Road, Mount Roskill', body: 'There are overnight roadworks on Stamford Park Road in Mount Roskill from Monday 12 October to Wednesday 21 October, between 9pm and 5am.\nBuses will not stop at:\n• Stop 8694 - Stamford Park Road\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to overnight roadworks from 12 October to 21 October, between 9pm and 5am. Use Journey Planner to find other stops nearby.' }
       },
       {
         name: 'Bus holding: plural cause grammar', run: () => busOut({ ...BUS0, tpl: 'holding', effect: 'Delays', routes: '70', street: 'Great South Road', suburb: 'Papakura', cause: 'roadworks' }),
@@ -1164,7 +1206,7 @@
       },
       {
         name: 'Bus planned: two separate dates, same month', run: () => busOut({ ...BUS0, tpl: 'planned', routes: '83', street: 'Carlisle Road', suburb: 'Browns Bay', cause: 'roadworks', stops: '3050 - Barker Rise > 3048 - Finchley Road', dateMode: 'dates', dates: ['2026-10-12', '2026-10-08'], t1: '20:00', t2: '05:00' }),
-        exp: { body: 'There are overnight roadworks on Carlisle Road in Browns Bay on Thursday 8 and Monday 12 October, between 8pm and 5am.\nBuses will not stop at:\n• Stop 3050 - Barker Rise\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to overnight roadworks on Thursday 8 and Monday 12 October, between 8pm and 5am. Use Journey Planner to find other stops nearby.' }
+        exp: { body: 'There are overnight roadworks on Carlisle Road in Browns Bay on Thursday 8 and Monday 12 October, between 8pm and 5am.\nBuses will not stop at:\n• Stop 3050 - Barker Rise\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to overnight roadworks on 8 and 12 October, between 8pm and 5am. Use Journey Planner to find other stops nearby.' }
       },
       {
         name: 'Bus planned: three dates', run: () => busOut({ ...BUS0, tpl: 'planned', routes: '83', street: 'X Road', suburb: 'Y', cause: 'roadworks', dateMode: 'dates', dates: ['2026-10-08', '2026-10-10', '2026-10-12'], t1: '09:00', t2: '15:00' }),
@@ -1185,7 +1227,7 @@
       },
       {
         name: 'Bus planned: all day (at all times)', run: () => busOut({ ...BUS0, tpl: 'planned', routes: '25B', street: 'May Rd', suburb: 'Mt Roskill', cause: 'roadworks', allDay: true, stops: '1234 - May Rd/Dominion Rd', d1: '2026-10-12', d2: '2026-10-21', t1: '21:00', t2: '05:00' }),
-        exp: { title: 'Detour: Route 25B - May Road, Mount Roskill', body: 'There are roadworks on May Road in Mount Roskill from Monday 12 October to Wednesday 21 October, at all times.\nBuses will not stop at:\n• Stop 1234 - May Road/Dominion Road\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to roadworks from Monday 12 October to Wednesday 21 October, at all times. Use Journey Planner to find other stops nearby.' }
+        exp: { title: 'Detour: Route 25B - May Road, Mount Roskill', body: 'There are roadworks on May Road in Mount Roskill from Monday 12 October to Wednesday 21 October, at all times.\nBuses will not stop at:\n• Stop 1234 - May Road/Dominion Road\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to roadworks from 12 October to 21 October, at all times. Use Journey Planner to find other stops nearby.' }
       },
       {
         name: 'Bus planned UPDATE: all day', run: () => busOut({ ...BUS0, tpl: 'plannedUpdate', routes: '25B', street: 'May Road', suburb: 'Mount Roskill', cause: 'roadworks', allDay: true, d1: '2026-10-14', d2: '2026-10-14' }),
@@ -1220,7 +1262,7 @@
       { name: 'Temporary stop wording', run: () => ({ body: ['outside 12 Main St', '12 Main St', 'at 12 Main St', 'opp 5 Queen St'].map(t => busOut({ ...BUS0, tpl: 'planned', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - A', temp: t, d1: '2026-11-10', d2: '2026-11-10', t1: '09:00', t2: '15:00' }).pid.split('. ').pop()).join(' | ') }), exp: { body: 'A temporary stop has been set up outside 12 Main Street. | A temporary stop has been set up at 12 Main Street. | A temporary stop has been set up at 12 Main Street. | A temporary stop has been set up opposite 5 Queen Street.' } },
       {
         name: 'Bus: temporary stop for each stop', run: () => { const o = busOut({ ...BUS0, tpl: 'planned', routes: '313', street: 'Robertson Road', suburb: 'Mangere', cause: 'roadworks', allDay: true, stops: '6503 - Jacueline Place > Temporary Bus Stop at #257 Robertson Rd\n2395 - Ashley Avenue > Temporary Bus Stop at #207 Robertson Road\n1111 - Other Stop', d1: '2027-03-30', d2: '2027-03-30' }); return { body: o.body, pid: o.pids.map(p => p.text).join(' | ') }; },
-        exp: { body: 'There are roadworks on Robertson Road in Mangere on Tuesday 30 March, at all times.\nBuses will not stop at:\n• Stop 6503 - Jacueline Place: a temporary bus stop has been set up at 257 Robertson Road\n• Stop 2395 - Ashley Avenue: a temporary bus stop has been set up at 207 Robertson Road\n• Stop 1111 - Other Stop\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to roadworks on Tuesday 30 March, at all times. A temporary stop has been set up at 257 Robertson Road. | Buses will not stop here due to roadworks on Tuesday 30 March, at all times. A temporary stop has been set up at 207 Robertson Road. | Buses will not stop here due to roadworks on Tuesday 30 March, at all times. Use Journey Planner to find other stops nearby.' }
+        exp: { body: 'There are roadworks on Robertson Road in Mangere on Tuesday 30 March, at all times.\nBuses will not stop at:\n• Stop 6503 - Jacueline Place: a temporary bus stop has been set up at 257 Robertson Road\n• Stop 2395 - Ashley Avenue: a temporary bus stop has been set up at 207 Robertson Road\n• Stop 1111 - Other Stop\nUse Journey Planner to find other stops nearby.', pid: 'Buses will not stop here due to roadworks on 30 March, at all times. A temporary stop has been set up at 257 Robertson Road. | Buses will not stop here due to roadworks on 30 March, at all times. A temporary stop has been set up at 207 Robertson Road. | Buses will not stop here due to roadworks on 30 March, at all times. Use Journey Planner to find other stops nearby.' }
       },
       { name: 'Link services typed in words', run: () => ({ body: [routesFmt('Inner Link, 70'), routesFmt('OUT'), routesFmt('70 and 75'), routesFmt('City Link')].join(' | ') }), exp: { body: 'Route 70 and Inner Link | Outer Link | Routes 70 and 75 | City Link' } },
       { name: 'Train PID keeps "about"', run: () => ({ pid: trainOut({ ...T0, lines: ['EW'], a: 'Henderson', cause: 'track issue', blocks: [{ type: 'freq', line: 'EW', min: '20', about: true }] }).pid }), exp: { pid: 'Track issue near Henderson: E-W trains run about every 20 min. Expect delays. Check the destination before you board.' } },
@@ -1271,6 +1313,10 @@
           const set = [trainOut({ ...T0, ...P('s1') }), busOut({ ...BUS0, tpl: 'planned', routes: '313', street: 'Robertson Road', suburb: 'Mangere', cause: 'roadworks', allDay: true, stops: '6503 - Jacueline Place > Temporary Bus Stop at #257 Robertson Rd\n1111 - Other Stop', d1: '2027-03-30', d2: '2027-03-30' }), ferryOut({ tpl: 'cancel', cause: 'ferry breakdown', sailings: '07:40 BCH-DFT' }), facOut({ tpl: 'down', asset: 'Lift', station: 'Waitematā Station' })];
           return { body: set.map(o => { const r = checkText(j(o)); return r.mode + ':' + r.issues.filter(i => !/^PID is/.test(i.msg)).length; }).join(' ') };
         }, exp: { body: 'train:0 bus:0 ferry:0 facilities:0' }
+      },
+      {
+        name: 'Bus PID: no day names; alert keeps them', run: () => { const o = busOut({ ...BUS0, tpl: 'planned', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - Foo', d1: '2026-12-07', d2: '2026-12-10', t1: '09:00', t2: '15:00' }); const u = busOut({ ...BUS0, tpl: 'plannedUpdate', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - Foo', d1: '2026-12-07', d2: '2026-12-07', allDay: true }); return { body: o.body.split('\n')[0] + ' | ' + o.pid + ' | ' + u.pid }; },
+        exp: { body: 'There are roadworks on X Road in Y from Monday 7 December to Thursday 10 December, between 9am and 3pm. | Buses will not stop here due to roadworks from 7 December to 10 December, between 9am and 3pm. Use Journey Planner to find other stops nearby. | Buses will not stop here due to roadworks on 7 December, at all times. Use Journey Planner to find other stops nearby.' }
       },
       { name: 'Checker catches wrong article', run: () => ({ body: lint('because of a incident', 'body', 'train').length + '/' + lint('because of a flooding', 'body', 'train').length }), exp: { body: '1/1' } },
     ];
@@ -1773,7 +1819,7 @@
       const st = document.querySelector('[data-m="bus"][data-k="street"]'), su = document.querySelector('[data-m="bus"][data-k="suburb"]');
       if (st) st.value = p.road; if (su) su.value = p.suburb; renderOut();
     });
-      // ===== Theme (Light, Dark, Command centre, Cyberpunk, GTA 6) =====
+      // ===== Theme (Light, Dark, Command centre, Cyberpunk, GTA 6, Eyecare) =====
       (() => {
         const sel = $('#themeSel'); sel.value = document.documentElement.getAttribute('data-theme') || 'light';
         sel.addEventListener('change', () => { document.documentElement.setAttribute('data-theme', sel.value); try { localStorage.setItem('ncs-theme', sel.value); } catch (e) { } closePop(); });
