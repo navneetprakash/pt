@@ -409,6 +409,7 @@
     .period-h .period-ad { margin-left: auto; color: var(--ink) }
     .period-h .period-ad .chk { margin: 0 }
 
+    table.rfields th { width: 32%; color: var(--mut); font-weight: 600; font-size: 12.5px } table.rfields td { font-size: 14px; white-space: pre-wrap } table.rfields td:last-child { width: 1%; text-align: right } table.rfields tr:last-child th, table.rfields tr:last-child td { border-bottom: 0 }
 .editing { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--acc2); color: var(--ink); border: 1px solid var(--acc3); border-radius: 10px; padding: 9px 12px; margin: -4px 0 16px; font-size: 13px }
       /* ===== Check wording ===== */
       .chk-in { min-height: 230px; font-size: 14px; line-height: 1.6 }
@@ -458,6 +459,8 @@
       header { position: static }
       .bar { padding: 10px 14px; gap: 10px }
       nav { gap: 8px }
+      nav, .tabs, .tools { flex-wrap: wrap; max-width: 100% }
+      nav button { padding: 7px 11px }
       main { padding: 14px 12px 32px; gap: 14px }
       .card { padding: 16px }
       table { table-layout: fixed } td { word-break: break-word }
@@ -475,7 +478,7 @@
       <div class="brand">Network Comms<span>Disruption messaging</span></div>
       <nav id="nav">
         <div class="tabs" role="tablist" aria-label="Message type">
-          <button data-tab="train" class="on">Train</button><button data-tab="bus">Bus</button><button data-tab="ferry">Ferry</button><button data-tab="fac">Facilities</button>
+          <button data-tab="train" class="on">Train</button><button data-tab="bus">Bus</button><button data-tab="ferry">Ferry</button><button data-tab="fac">Facilities</button><button data-tab="road">Roading/NZTA</button>
         </div>
         <span class="sep"></span>
         <div class="tools">
@@ -1071,6 +1074,124 @@
       for (let n = 0; n < 6; n++) { const f = checkText(text, { ...opt, mode }).issues.filter(i => i.fix !== null); if (!f.length) break; const next = applyFixes(text, f); if (next === text) break; text = next; }
       return text;
     }
+    // ===== ROADING / NZTA ENGINE (from ATOC Network Comms Generator V15 + AHB V15 knowledge base) =====
+    // Separate from the AT rules above: NZTA/TREIS wording uses "Due to", so AT checks are NOT applied to this tab.
+    const ROAD_EVENTS = [['crash', 'Crash'], ['breakdown', 'Breakdown'], ['fire', 'Vehicle fire'], ['roadworks', 'Roadworks (active)'], ['flooding', 'Flooding'], ['slip', 'Slip / debris'], ['winds', 'AHB strong winds'], ['other', 'Other incident']];
+    const ROAD_LABEL = { crash: 'CRASH', breakdown: 'BREAKDOWN', fire: 'VEHICLE FIRE', roadworks: 'ROADWORKS', flooding: 'FLOODING', slip: 'SLIP', winds: 'STRONG WINDS', other: 'INCIDENT' };
+    const ROAD_CAUSE = { crash: 'a crash', breakdown: 'a breakdown', fire: 'a vehicle fire', roadworks: 'roadworks', flooding: 'surface flooding', slip: 'a slip or debris', winds: 'strong winds', other: 'an incident' };
+    const ROAD_IMPACT = { left: 'the left lane is blocked', right: 'the right lane is blocked', centre: 'the centre lane is blocked', multiple: 'multiple lanes are blocked', closed: 'the road is closed', ramp: 'the ramp or link is closed', shoulder: 'a hazard is on the shoulder', caution: 'caution is advised' };
+    const ROAD_IMPACT_OPTS = [['left', 'Left lane blocked'], ['right', 'Right lane blocked'], ['centre', 'Centre lane blocked'], ['multiple', 'Multiple lanes blocked'], ['closed', 'Full road closure'], ['ramp', 'Ramp / link closed'], ['shoulder', 'Shoulder only'], ['caution', 'Caution / no lane blocked']];
+    const ROAD_SCEN = { crash: [['auto', 'Auto: traffic impact'], ['lane', 'Lane blockage'], ['delays', 'Congestion / delays'], ['closure', 'Full closure'], ['investigation', 'Investigation confirmed'], ['recovery', 'Recovery confirmed']], breakdown: [['auto', 'Auto: traffic impact'], ['shoulder', 'Shoulder hazard'], ['lane', 'Lane blockage'], ['recovery', 'Recovery confirmed']], roadworks: [['auto', 'Active roadworks'], ['lane', 'Lane restriction'], ['closure', 'Full closure']] };
+    const roadScenarios = ev => ROAD_SCEN[ev] || [['auto', 'Auto: traffic impact'], ['lane', 'Lane restriction'], ['closure', 'Full closure']];
+    const AHB_STAGES = [['advance', 'Advance warning · MetService Orange warning'], ['1', 'Stage 1 · Speed restrictions'], ['2', 'Stage 2 · Wind-vulnerable vehicles'], ['3', 'Stage 3 · Lane reductions'], ['4', 'Stage 4 · Full bridge closure']];
+    // Exact wording from TREIS Templates (ATOC ONLY AHB WINDS ADDENDUM) v1.0, 15 June 2022.
+    const AHB = {
+      site: 'SH 1 Auckland Harbour Bridge', alt: 'Consider using the Western Ring Route (SH16 and SH18) as an alternative route.',
+      2: 'Due to strong wind gusts reduced speed limits are in place on the Harbour Bridge. Lane reductions may be required. Caution is advised, especially for high-sided vehicles and motorcycles.',
+      3: 'Due to severe wind gusts reduced speed limits and lane reductions are in place. A temporary full closure may be required if winds gust over 90km/h. Take extra care. High-sided vehicles and motorcyclists should consider delaying their journey or detour via SH18/SH16 (Western Ring Route).',
+      4: 'Due to severe wind gusts all lanes on the Harbour Bridge, in both directions, are temporarily closed. Delay your journey or detour via SH18/SH16 (Western Ring Route). Harbour Bridge lanes will reopen as soon as gusts become less severe.'
+    };
+    const ROAD0 = { channel: 'treis', style: 'standard', event: 'crash', condition: 'restricted', route: '', direction: '', from: '', to: '', restriction: '', delay: '', detour: '', scenario: 'auto', stage: 'initial', special: false, wsD: '', wsT: '', weD: '', weT: '', windStage: '', wD1: '', wT1: '', wD2: '', wT2: '', notes: '', cleared: false, headline: '', posts: [] };
+    function roadData(s) {
+      const x = { ...ROAD0, ...s };
+      for (const k of ['route', 'from', 'to', 'detour']) x[k] = fullNames(String(x[k] || '').trim());
+      x.notes = String(x.notes || '').trim(); x.delay = String(x.delay ?? '').trim();
+      if (x.event === 'winds') { x.route = 'SH1 Auckland Harbour Bridge'; x.from = 'Auckland Harbour Bridge'; x.to = ''; x.direction = 'Both directions'; x.restriction = x.windStage === '4' ? 'closed' : x.windStage === '3' ? 'multiple' : 'caution'; x.scenario = 'auto'; x.delay = ''; x.detour = ''; }
+      return x;
+    }
+    function roadLocation(x) { const range = x.from && x.to ? 'between ' + x.from + ' and ' + x.to : x.from ? 'near ' + x.from : '[LOCATION REQUIRED]'; return [x.route, x.direction === 'Not applicable' ? '' : (x.direction || '').toLowerCase(), range].filter(Boolean).join(' '); }
+    function roadCategory(x) {
+      if (x.event === 'winds') return x.windStage === 'advance' ? 'AHB · Orange wind warning (TREIS)' : 'AHB strong winds · Stage ' + (x.windStage || 'not selected');
+      if (x.restriction === 'closed') return 'Full road closure';
+      if (x.restriction === 'ramp') return 'Ramp / link closure';
+      if (['left', 'right', 'centre', 'multiple'].includes(x.restriction)) return 'Urban network · Lanes blocked';
+      if (x.event === 'roadworks') return 'Planned roadworks';
+      return 'Urban network · Caution / delays';
+    }
+    const roadDT = (d, t) => d ? d + 'T' + (t || '00:00') : '';
+    function roadProblems(x, channel, final) {
+      const out = [];
+      if (x.event !== 'winds') for (const [key, label] of [['route', 'Road'], ['direction', 'Direction'], ['from', 'Location'], ['restriction', 'Traffic impact']]) if (!x[key]) out.push(label + ' missing');
+      if (x.delay !== '' && (!/^\d+$/.test(x.delay) || +x.delay > 999)) out.push('Invalid delay (whole minutes, 0 to 999)');
+      if (x.scenario === 'closure' && x.restriction !== 'closed') out.push('Closure scenario conflicts with traffic impact');
+      if (x.scenario === 'lane' && !['left', 'right', 'centre', 'multiple'].includes(x.restriction)) out.push('Lane scenario conflicts with traffic impact');
+      if (x.scenario === 'shoulder' && x.restriction !== 'shoulder') out.push('Shoulder scenario conflicts with traffic impact');
+      if (['investigation', 'recovery'].includes(x.scenario) && !x.special) out.push('Confirm investigation/recovery before drafting');
+      if (x.event === 'roadworks' && (!x.wsD || !x.weD)) out.push('Roadworks start and finish dates required');
+      if (x.event === 'roadworks' && x.wsD && x.weD && roadDT(x.weD, x.weT) <= roadDT(x.wsD, x.wsT)) out.push('Works finish must follow start');
+      if (x.event === 'winds') {
+        if (!x.windStage && x.condition !== 'clear') out.push('Confirmed AHB stage required');
+        if (x.condition !== 'clear' && x.windStage === '1') out.push('AHB Stage 1: no TREIS or Facebook communication is required under the stage guidance');
+        if (x.condition !== 'clear' && x.windStage === '2' && channel === 'facebook') out.push('AHB Stage 2: TREIS only in the stage guidance; Facebook is not listed');
+        if (x.windStage === 'advance' && channel === 'facebook') out.push('AHB advance warning: only the TREIS template is verified by the addendum');
+        if (x.windStage === 'advance' && (!x.wD1 || !x.wT1 || !x.wT2)) out.push('Orange warning start date, start time and end time are required');
+        if (x.windStage === 'advance' && x.wD1 && x.wT1 && x.wT2 && roadDT(x.wD2 || x.wD1, x.wT2) <= roadDT(x.wD1, x.wT1)) out.push('Orange warning end must follow start (set an end date if it finishes the next day)');
+      }
+      if (final && x.condition !== 'clear') out.push('Final requires confirmed clearance');
+      return out;
+    }
+    // Returns { text, fields } for TREIS; { text } for Facebook.
+    function roadBody(x, channel, flags = []) {
+      const place = roadLocation(x), impact = ROAD_IMPACT[x.restriction] || '[IMPACT REQUIRED]', cause = ROAD_CAUSE[x.event];
+      if (x.event === 'winds') {
+        if (x.condition === 'clear') { flags.push('The AHB addendum has no reopening template. Treat this final wording as unverified and get it reviewed.'); return { text: 'The strong wind restrictions on the Auckland Harbour Bridge have been lifted. All lanes are now open.' }; }
+        if (x.windStage === '1') return { text: '' };
+        let imp = 'Caution', comment = '', resolution = 'Until further notice';
+        if (x.windStage === 'advance') {
+          const sameDay = !x.wD2 || x.wD2 === x.wD1;
+          comment = 'Strong wind gusts are expected to affect the Harbour Bridge ' + (sameDay ? 'on ' + fmtDate(x.wD1) + ' between ' + fmtTime(x.wT1) + ' and ' + fmtTime(x.wT2) : 'from ' + fmtDate(x.wD1) + ' at ' + fmtTime(x.wT1) + ' to ' + fmtDate(x.wD2) + ' at ' + fmtTime(x.wT2)) + '. Speed restrictions and lane reductions are likely, while temporary full closures may be required if severe winds gust over 90km/h. Caution is advised, especially for high-sided vehicles and motorcyclists. Please drive with care and expect delays.';
+          if (!sameDay) flags.push('The warning runs over two days. The addendum template expects one date, so check the wording.');
+          resolution = (x.wD1 ? fmtDate(x.wD2 || x.wD1) + ', ' : '') + fmtTime(x.wT2);
+        } else if (AHB[x.windStage]) { comment = AHB[x.windStage]; if (x.windStage === '4') imp = 'Road Closed'; }
+        else return { text: '[CONFIRMED AHB STAGE REQUIRED]' };
+        if (channel === 'treis') {
+          const fields = [['Location Area / SH', AHB.site], ['Direction', 'Not applicable'], ['Impact', imp], ['Event Description', 'Strong Winds'], ['Event Comments', comment], ['Alternative Route', AHB.alt], ['Expected Resolution', resolution]];
+          return { text: fields.map(([k, v]) => k + ': ' + v).join('\n'), fields };
+        }
+        flags.push('The AHB addendum does not approve Facebook wording. Get this reviewed before posting.');
+        return { text: comment + ' ' + AHB.alt };
+      }
+      let r;
+      if (x.condition === 'clear') r = 'The ' + ROAD_LABEL[x.event].toLowerCase() + (x.event === 'roadworks' ? ' have' : ' has') + ' cleared on ' + place + '. All lanes are now open.';
+      else if (x.condition === 'partial') r = 'Some lanes have reopened on ' + place + '. ' + cap(impact) + '. Pass the scene with care.';
+      else if (x.style === 'direct') r = cap(cause) + ' on ' + place + ': ' + impact + '.';
+      else if (x.style === 'location') r = 'On ' + place + ', ' + impact + ' due to ' + cause + '.';
+      else r = 'Due to ' + cause + ' on ' + place + ', ' + impact + '.';
+      if (['restricted', 'partial'].includes(x.condition)) {
+        if (x.delay !== '') r += ' Confirmed delays of approximately ' + x.delay + ' minutes.';
+        if (x.detour) r += ' ' + x.detour.replace(/[.!?]?$/, '.');
+        else if (['closed', 'ramp'].includes(x.restriction)) { r += ' Detour details require confirmation.'; flags.push('No detour entered: the draft says "Detour details require confirmation". Add the confirmed detour before publishing.'); }
+        else if (x.condition === 'restricted') r += ' Pass the scene with care.';
+      }
+      if (x.special && x.scenario === 'investigation') r += ' An investigation is underway.';
+      if (x.special && x.scenario === 'recovery') r += ' Vehicle recovery is underway.';
+      if (x.notes) r += '\n' + x.notes;
+      return { text: r };
+    }
+    // Auckland time, e.g. "WED, 25 NOV, 2:05PM" (headline) or "2:05PM" (short)
+    function nzTime(date, short) {
+      const dt = date instanceof Date ? date : new Date(date);
+      return new Intl.DateTimeFormat('en-NZ', short ? { timeZone: 'Pacific/Auckland', hour: 'numeric', minute: '2-digit', hour12: true } : { timeZone: 'Pacific/Auckland', weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).format(dt).toUpperCase().replace(/\s(?=AM|PM)/g, '');
+    }
+    function roadHeadline(x, when, final) {
+      if (x.event === 'winds') return 'SH1 AUCKLAND HARBOUR BRIDGE - STRONG WINDS - ' + nzTime(when) + (final ? ' - FINAL UPDATE' : '');
+      const from = x.from ? x.from.toUpperCase() : '', to = x.to ? ' TO ' + x.to.toUpperCase() : '';
+      return (x.route.toUpperCase() + ' ' + from + to + ' - ' + ROAD_LABEL[x.event] + ' - ' + nzTime(when) + (final ? ' - FINAL UPDATE' : '')).replace(/\s+/g, ' ');
+    }
+    const roadPostLabel = p => (p.stage === 'initial' ? '' : p.stage === 'final' ? 'FINAL UPDATE ' : 'UPDATE ') + nzTime(p.time, true);
+    function roadAssembled(s) { return s.posts.length ? [s.headline, ...s.posts.map(p => roadPostLabel(p) + '\n' + p.text)].join('\n------\n').replace('\n------\n', '\n') : ''; }
+    // Draft for the current inputs (TREIS) or the next Facebook entry.
+    function roadOut(s) {
+      const flags = [], final = s.channel === 'facebook' && s.stage === 'final';
+      const x = roadData(final ? { ...s, condition: 'clear' } : s);
+      const problems = roadProblems(x, s.channel, final || x.stage === 'final');
+      if (s.channel === 'facebook' && final && !s.cleared) problems.push('Tick "Incident cleared and all lanes reopened (confirmed)" for a final Facebook update');
+      if (s.channel === 'facebook' && s.stage === 'update' && (s.posts || []).some(p => p.stage === 'final')) problems.push('This post already has a final update. Start a new incident before adding more updates.');
+      if (s.channel === 'facebook' && s.stage !== 'initial' && !(s.posts || []).length) problems.push('Add the initial Facebook post first');
+      const b = roadBody(x, s.channel, flags);
+      const summary = (x.event === 'winds' ? 'SH1 Auckland Harbour Bridge' : (x.route || '[ROAD]')) + ' · ' + (ROAD_EVENTS.find(e => e[0] === x.event) || ['', ''])[1] + ' · ' + (s.channel === 'treis' ? 'TREIS' : 'Facebook');
+      return { category: roadCategory(x), text: b.text, fields: b.fields || null, flags, problems, summary, data: x };
+    }
     // ===== PRESETS (CRL New Disruption Templates V2) =====
     const PRESETS = {
       s1: {
@@ -1318,6 +1439,21 @@
         name: 'Bus PID: no day names; alert keeps them', run: () => { const o = busOut({ ...BUS0, tpl: 'planned', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - Foo', d1: '2026-12-07', d2: '2026-12-10', t1: '09:00', t2: '15:00' }); const u = busOut({ ...BUS0, tpl: 'plannedUpdate', routes: '70', street: 'X Road', suburb: 'Y', cause: 'roadworks', stops: '1234 - Foo', d1: '2026-12-07', d2: '2026-12-07', allDay: true }); return { body: o.body.split('\n')[0] + ' | ' + o.pid + ' | ' + u.pid }; },
         exp: { body: 'There are roadworks on X Road in Y from Monday 7 December to Thursday 10 December, between 9am and 3pm. | Buses will not stop here due to roadworks from 7 December to 10 December, between 9am and 3pm. Use Journey Planner to find other stops nearby. | Buses will not stop here due to roadworks on 7 December, at all times. Use Journey Planner to find other stops nearby.' }
       },
+      {
+        name: 'Roading: AHB Stage 4 TREIS fields (addendum wording)', run: () => ({ body: roadOut({ ...ROAD0, event: 'winds', windStage: '4' }).text }),
+        exp: { body: 'Location Area / SH: SH 1 Auckland Harbour Bridge\nDirection: Not applicable\nImpact: Road Closed\nEvent Description: Strong Winds\nEvent Comments: Due to severe wind gusts all lanes on the Harbour Bridge, in both directions, are temporarily closed. Delay your journey or detour via SH18/SH16 (Western Ring Route). Harbour Bridge lanes will reopen as soon as gusts become less severe.\nAlternative Route: Consider using the Western Ring Route (SH16 and SH18) as an alternative route.\nExpected Resolution: Until further notice' }
+      },
+      { name: 'Roading: AHB Stage 1 blocked, Stage 2 Facebook blocked', run: () => ({ body: roadOut({ ...ROAD0, event: 'winds', windStage: '1' }).problems.length + '/' + roadOut({ ...ROAD0, event: 'winds', windStage: '2', channel: 'facebook' }).problems.length + '/' + roadOut({ ...ROAD0, event: 'winds', windStage: '2' }).problems.length }), exp: { body: '1/1/0' } },
+      {
+        name: 'Roading: AHB advance warning wording', run: () => { const o = roadOut({ ...ROAD0, event: 'winds', windStage: 'advance', wD1: '2026-11-25', wT1: '14:00', wT2: '20:00' }); return { body: o.fields[4][1] + ' | ' + o.fields[6][1] }; },
+        exp: { body: 'Strong wind gusts are expected to affect the Harbour Bridge on Wednesday 25 November between 2pm and 8pm. Speed restrictions and lane reductions are likely, while temporary full closures may be required if severe winds gust over 90km/h. Caution is advised, especially for high-sided vehicles and motorcyclists. Please drive with care and expect delays. | Wednesday 25 November, 8pm' }
+      },
+      {
+        name: 'Roading: crash TREIS, three wording styles', run: () => { const b = { ...ROAD0, route: 'SH1 Southern Mwy', direction: 'Northbound', from: 'Greenlane', to: 'Market Rd', restriction: 'left', delay: '15' }; return { body: ['standard', 'direct', 'location'].map(style => roadOut({ ...b, style }).text).join(' | ') }; },
+        exp: { body: 'Due to a crash on SH1 Southern Motorway northbound between Greenlane and Market Road, the left lane is blocked. Confirmed delays of approximately 15 minutes. Pass the scene with care. | A crash on SH1 Southern Motorway northbound between Greenlane and Market Road: the left lane is blocked. Confirmed delays of approximately 15 minutes. Pass the scene with care. | On SH1 Southern Motorway northbound between Greenlane and Market Road, the left lane is blocked due to a crash. Confirmed delays of approximately 15 minutes. Pass the scene with care.' }
+      },
+      { name: 'Roading: missing inputs and conflicts', run: () => ({ body: roadOut({ ...ROAD0, scenario: 'closure', restriction: 'left' }).problems.join('; ') }), exp: { body: 'Road missing; Direction missing; Location missing; Closure scenario conflicts with traffic impact' } },
+      { name: 'Roading: cleared wording', run: () => ({ body: roadOut({ ...ROAD0, condition: 'clear', event: 'roadworks', route: 'SH16', direction: 'Westbound', from: 'Lincoln Rd', restriction: 'caution', wsD: '2026-11-25', weD: '2026-11-26' }).text }), exp: { body: 'The roadworks have cleared on SH16 westbound near Lincoln Road. All lanes are now open.' } },
       { name: 'Checker catches wrong article', run: () => ({ body: lint('because of a incident', 'body', 'train').length + '/' + lint('because of a flooding', 'body', 'train').length }), exp: { body: '1/1' } },
     ];
     function runTests() { return TESTS.map(t => { let o, fails = []; try { o = t.run(); for (const k in t.exp) if (o[k] !== t.exp[k]) fails.push({ k, got: o[k], exp: t.exp[k] }); } catch (e) { fails.push({ k: 'error', got: String(e), exp: '' }); } return { name: t.name, pass: !fails.length, fails }; }); }
@@ -1381,10 +1517,11 @@
       bus: { ...BUS0 },
       ferry: { tpl: 'cancel', cause: 'ferry breakdown', route: '', sailings: '', when: '', pier: '', d1: '', d2: '', piers: '', loc: '', t1: '', t2: '', t3: '', t4: '', reminder: false, mode: 'buses', a: '', b: '', times: '' },
       fac: { tpl: 'down', asset: 'Lift', station: '', tloc: '', detail: '', near: '', alt: '', cause: 'technical issue', subject: '', impact: '' },
-      check: { text: '', mode: 'auto', treat: 'auto', raw: '' }
+      check: { text: '', mode: 'auto', treat: 'auto', raw: '' },
+      road: JSON.parse(JSON.stringify(ROAD0))
     };
     let TAB = 'train', LAST = null, CUR_PRESET = '', EDITING = null;   // EDITING = { id, mode, at } while a saved message is open
-    const MODE_LABEL = { train: 'Train', bus: 'Bus', ferry: 'Ferry', fac: 'Facilities' };
+    const MODE_LABEL = { train: 'Train', bus: 'Bus', ferry: 'Ferry', fac: 'Facilities', road: 'Roading/NZTA' };
     const clone = o => JSON.parse(JSON.stringify(o));
     const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     function savedList() { return store.get('ncs-log', []).map(x => x.id ? x : { ...x, id: newId() }); }
@@ -1562,6 +1699,7 @@
     function renderOut() {
       const out = $('#out');
       if (TAB === 'check') { renderCheck(); return; }
+      if (TAB === 'road') { renderRoad(); return; }
       if (['tests', 'log'].includes(TAB)) { out.innerHTML = ''; return; }
       const o = compute(); LAST = o; const mode = TAB === 'fac' ? 'facilities' : TAB;
       const chans = [['title', 'Title'], ['body', 'Alert'], ['pid', 'PID']].filter(([k]) => o[k]);
@@ -1652,12 +1790,102 @@
       else { const pi = CHECK_RES.parts.findIndex(p => i.start >= p.start && i.start <= p.end); const card = $('#part' + pi); if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); flash(card); } }
       const ta = $('#chkIn'); if (ta && i.end > i.start) { ta.focus({ preventScroll: true }); ta.setSelectionRange(i.start, i.end); }
     });
-    function allText(o) { return [o.title, o.body, o.pid, ...(o.pids || []).map(p => p.label + ': ' + p.text)].filter(Boolean).join('\n\n'); }
+    function allText(o) { if (o.copyText !== undefined) return o.copyText; return [o.title, o.body, o.pid, ...(o.pids || []).map(p => p.label + ': ' + p.text)].filter(Boolean).join('\n\n'); }
 
     // ---------- RENDER + EVENTS ----------
-    const FORMS = { train: trainForm, bus: busForm, ferry: ferryForm, fac: facForm, check: checkForm, tests: testsForm, log: logForm };
+    const FORMS = { train: trainForm, bus: busForm, ferry: ferryForm, fac: facForm, road: roadForm, check: checkForm, tests: testsForm, log: logForm };
     function render() { $('#form').innerHTML = editBanner() + FORMS[TAB](); renderOut(); }
-    const RERENDER = new Set(['format', 'stage', 'locType', 'tpl', 'effect', 'allDay', 'weAllDay']);
+    const RERENDER = new Set(['format', 'stage', 'locType', 'tpl', 'effect', 'allDay', 'weAllDay', 'event', 'windStage', 'scenario', 'condition', 'cleared']);
+    // ---------- ROADING / NZTA ----------
+    let ROAD_UNDO = [];
+    function roadForm() {
+      const s = ST.road, m = 'road', w = s.event === 'winds', fb = s.channel === 'facebook';
+      const chan = `<div class="segc">${[['treis', 'TREIS'], ['facebook', 'Facebook']].map(([k, l]) => `<button type="button" data-roadch="${k}" class="${s.channel === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+      const style = `<div class="segc segc-wrap">${[['standard', 'Standard'], ['direct', 'Concise'], ['location', 'Location first']].map(([k, l]) => `<button type="button" data-rstyle="${k}" class="${s.style === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+      let f = F('Channel', chan) + F('Event type', sel(m, 'event', opts(ROAD_EVENTS, s.event)))
+        + F('Road condition', sel(m, 'condition', opts([['restricted', 'Restriction in place'], ['partial', 'Partially reopened'], ['clear', 'All lanes reopened']], s.condition)))
+        + F(fb ? 'Facebook entry' : 'Message stage', sel(m, 'stage', opts([['initial', 'Initial'], ['update', 'Update'], ['final', 'Final']], s.stage)));
+      if (w) {
+        f += F('Confirmed AHB stage', sel(m, 'windStage', opts(AHB_STAGES, s.windStage, 'Select the stage confirmed by operations')), 'full')
+          + `<div class="full"><p class="note" style="margin:0">Location is set to SH1 Auckland Harbour Bridge. Pick the stage operations have confirmed; it is never worked out from wind speed.</p></div>`;
+        if (s.windStage === 'advance') f += F('Orange warning date', inp(m, 'wD1', s.wD1, '', 'date')) + F('Ends on (only if a different day)', inp(m, 'wD2', s.wD2, '', 'date'))
+          + F('Warning begins', inp(m, 'wT1', s.wT1, '', 'time')) + F('Warning ends', inp(m, 'wT2', s.wT2, '', 'time'))
+          + `<div class="full"><p class="note" style="margin:0">Use only for a confirmed MetService Orange wind warning. A Yellow watch alone does not need this TREIS entry.</p></div>`;
+      } else {
+        const sc = roadScenarios(s.event);
+        f += F('State highway / road', inp(m, 'route', s.route, 'e.g. SH1 Southern Motorway')) + F('Direction', sel(m, 'direction', opts(['Northbound', 'Southbound', 'Eastbound', 'Westbound', 'Both directions', 'Not applicable'], s.direction, 'Select')))
+          + F('From / near', inp(m, 'from', s.from, 'e.g. Greenlane')) + F('To / before (optional)', inp(m, 'to', s.to, 'e.g. Market Road'))
+          + F('Traffic impact', sel(m, 'restriction', opts(ROAD_IMPACT_OPTS, s.restriction, 'Select'))) + F('Confirmed delay in minutes (optional)', inp(m, 'delay', s.delay, 'Unknown if blank'))
+          + F('Confirmed detour or advice (optional)', inp(m, 'detour', s.detour, 'Only enter confirmed information'), 'full')
+          + F('Scenario variation', sel(m, 'scenario', opts(sc, sc.some(x => x[0] === s.scenario) ? s.scenario : 'auto')))
+          + F('Wording style', style);
+        if (['investigation', 'recovery'].includes(s.scenario)) f += `<div class="full">${ck(m, 'special', s.special, 'Investigation / recovery detail confirmed')}</div>`;
+        if (s.event === 'roadworks') f += F('Works start date', inp(m, 'wsD', s.wsD, '', 'date')) + F('Start time', inp(m, 'wsT', s.wsT, '', 'time')) + F('Expected finish date', inp(m, 'weD', s.weD, '', 'date')) + F('Finish time', inp(m, 'weT', s.weT, '', 'time'));
+        f += F('Additional confirmed facts (optional)', ta(m, 'notes', s.notes, 'Optional'), 'full');
+      }
+      let post = '';
+      if (fb) {
+        const n = s.posts.length;
+        post = `<h2 style="margin-top:22px">Facebook post</h2><p class="sub">One post. Latest update first, original message last. Each entry is stamped with the Auckland time when you add it.</p>
+        ${s.stage === 'final' ? `<div class="period" style="margin-bottom:12px">${ck(m, 'cleared', s.cleared, 'Incident cleared and all lanes reopened (confirmed)')}</div>` : ''}
+        <div class="row"><button type="button" class="btn" id="roadAdd">${s.stage === 'initial' ? (n ? 'Start new post' : 'Create post') : s.stage === 'final' ? 'Add final update' : 'Add update'}</button><button type="button" class="btn ghost" id="roadUndo" ${ROAD_UNDO.length ? '' : 'disabled'}>Undo</button>${n ? '<button type="button" class="btn ghost" id="roadReset">Clear post</button>' : ''}</div>
+        ${n ? `<div class="grid" style="margin-top:14px">${F('Headline (editable)', inp(m, 'headline', s.headline), 'full')}</div>
+        ${s.posts.map((p, i) => `<div class="block" style="border-left-color:var(--acc)"><div class="bhead"><span>${p.stage === 'initial' ? 'INITIAL' : p.stage === 'final' ? 'FINAL UPDATE' : 'UPDATE'} ${esc(nzTime(p.time, true))}</span><span class="row"><button type="button" class="btn ghost sm" data-rmove="${i}" data-dir="-1" ${i ? '' : 'disabled'} aria-label="Move up">Up</button><button type="button" class="btn ghost sm" data-rmove="${i}" data-dir="1" ${i < n - 1 ? '' : 'disabled'} aria-label="Move down">Down</button><button type="button" class="btn ghost sm" data-rdel="${i}">Remove</button></span></div><textarea data-rpost="${i}" aria-label="Edit entry">${esc(p.text)}</textarea></div>`).join('')}` : '<p class="note">Fill in the incident, then create the post.</p>'}`;
+      }
+      return `<h2>Roading / NZTA</h2><p class="sub">TREIS and Facebook drafts for state highway incidents. Wording patterns come from the ATOC generator and the AHB winds addendum; verify against the current approved NZTA templates before publishing.</p>
+      <div class="grid">${f}</div>${post}`;
+    }
+    function roadSnap() { ROAD_UNDO.push(clone({ posts: ST.road.posts, headline: ST.road.headline })); if (ROAD_UNDO.length > 25) ROAD_UNDO.shift(); }
+    function roadCopyText(o) {
+      const s = ST.road;
+      if (s.channel === 'facebook') return roadAssembled(s);
+      return o.problems.length ? '' : o.text;
+    }
+    function renderRoad() {
+      const out = $('#out'), s = ST.road, o = roadOut(s), fb = s.channel === 'facebook';
+      const copyText = roadCopyText(o), blocked = !fb ? o.problems.length > 0 : !s.posts.length;
+      LAST = { title: o.summary, copyText, text: o.text };
+      const head = `<div class="row"><span class="pill ${o.problems.length ? 'err' : 'ok'}">${o.problems.length ? o.problems.length + ' input issue(s) to fix' : 'Input checks passed'}</span><span class="chk-meta">${esc(o.category)}</span><span style="margin-left:auto"></span>${EDITING && EDITING.mode === TAB ? '<button class="btn ghost sm" id="saveNew">Save as new</button><button class="btn ghost sm" id="save">Update saved</button>' : '<button class="btn ghost sm" id="save">Save</button>'}<button class="btn sm" id="copyAll" ${blocked || !copyText ? 'disabled' : ''}>${fb ? 'Copy post' : 'Copy all'}</button></div>`;
+      const probs = o.problems.length ? `<div class="oc"><div class="oh" style="color:var(--err)">Fix before copying</div><ul class="iss-list">${o.problems.map(p => `<li class="iss err" style="cursor:default"><div class="iss-top"><span class="iss-dot"></span><span class="iss-msg">${esc(p)}</span></div></li>`).join('')}</ul></div>` : '';
+      const flags = [...o.flags, 'Checks cover inputs and formatting only. They do not verify the live incident or approve publication.'];
+      const flagBox = `<div class="flags">${flags.map(f => `<div>⚑ ${esc(f)}</div>`).join('')}</div>`;
+      let cards = '';
+      if (!fb) {
+        if (o.fields) cards = `<div class="oc"><div class="oh">TREIS fields<span class="n">${o.text.length} chars</span><button class="btn ghost sm" data-rcopy="all" ${o.problems.length ? 'disabled' : ''}>Copy</button></div><table class="rfields">${o.fields.map(([k, v], i) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td><td><button class="btn ghost sm" data-rcopy="${i}" ${o.problems.length ? 'disabled' : ''}>Copy</button></td></tr>`).join('')}</table></div>`;
+        else if (o.text) cards = `<div class="oc"><div class="oh">TREIS event comments<span class="n">${o.text.length} chars</span><button class="btn ghost sm" data-rcopy="all" ${o.problems.length ? 'disabled' : ''}>Copy</button></div><div class="ot">${esc(o.text)}</div></div>`;
+      } else {
+        const next = o.text ? `<div class="oc internal"><div class="oh">Next entry preview<span class="n">${s.stage === 'initial' ? 'Initial' : s.stage === 'final' ? 'Final update' : 'Update'}</span></div><div class="ot">${esc(o.text)}</div></div>` : '';
+        const all = roadAssembled(s);
+        cards = next + (all ? `<div class="oc"><div class="oh">Facebook post<span class="n">${all.length} chars</span><button class="btn ghost sm" data-rcopy="post">Copy</button></div><div class="ot">${esc(all)}</div></div>` : '');
+      }
+      out.innerHTML = head + probs + flagBox + cards;
+    }
+    function roadAdd() {
+      const s = ST.road, o = roadOut(s);
+      if (o.problems.length) { toast('Fix the input issues first'); return; }
+      roadSnap();
+      const now = new Date(), stage = s.stage;
+      if (stage === 'initial') s.posts = [];
+      if (stage === 'final') s.posts = s.posts.filter(p => p.stage !== 'final');
+      s.posts.unshift({ stage, time: now.toISOString(), text: o.text });
+      if (stage === 'initial' || stage === 'final' || !s.headline) s.headline = roadHeadline(o.data, stage === 'final' ? new Date(s.posts[s.posts.length - 1].time) : now, stage === 'final');
+      if (stage === 'initial') s.stage = 'update';
+      render(); toast('Added at ' + nzTime(now, true));
+    }
+    document.addEventListener('click', e => {
+      if (TAB !== 'road') return;
+      const b = e.target.closest('button'); if (!b) return;
+      const s = ST.road;
+      if (b.dataset.roadch) { s.channel = b.dataset.roadch; render(); return; }
+      if (b.dataset.rstyle) { s.style = b.dataset.rstyle; render(); return; }
+      if (b.id === 'roadAdd') { roadAdd(); return; }
+      if (b.id === 'roadUndo') { const h = ROAD_UNDO.pop(); if (h) { s.posts = h.posts; s.headline = h.headline; render(); } return; }
+      if (b.id === 'roadReset') { if (!confirm('Clear the Facebook post?')) return; roadSnap(); s.posts = []; s.headline = ''; s.stage = 'initial'; s.cleared = false; render(); return; }
+      if (b.dataset.rmove !== undefined) { const i = +b.dataset.rmove, j = i + +b.dataset.dir; if (j < 0 || j >= s.posts.length) return; roadSnap(); [s.posts[i], s.posts[j]] = [s.posts[j], s.posts[i]]; render(); return; }
+      if (b.dataset.rdel !== undefined) { roadSnap(); s.posts.splice(+b.dataset.rdel, 1); render(); return; }
+      if (b.dataset.rcopy !== undefined) { const o = roadOut(s), k = b.dataset.rcopy; copy(k === 'post' ? roadAssembled(s) : k === 'all' ? o.text : o.fields[+k][1]); return; }
+    });
+
 
     // ===== Date and time popovers =====
     let POP = null;
@@ -1799,12 +2027,14 @@
       const el = e.target;
       if (el.id === 'logq') { ST.logq = el.value; const pos = el.selectionStart; render(); const q = $('#logq'); if (q) { q.focus(); q.setSelectionRange(pos, pos); } return; }
       if (el.id === 'preset') { CUR_PRESET = el.value; if (!el.value) ST.train = { ...T0, lines: ['EW'], cause: 'track issue', blocks: [] }; if (el.value) ST.train = JSON.parse(JSON.stringify({ ...T0, ...PRESETS[el.value].st })); render(); return; }
+      if (el.dataset.rpost !== undefined) { const p = ST.road.posts[+el.dataset.rpost]; if (p) { p.text = el.value; renderOut(); } return; }
       const m = el.dataset.m, k = el.dataset.k; if (!m) return;
       const v = el.type === 'checkbox' ? el.checked : el.value;
       if (m.startsWith('blk')) { const b = ST.train.blocks[+m.slice(3)]; b[k] = v; if (k === 'line') { b.dest = ''; b.skips = []; } if (['line', 'dest'].includes(k)) return render(); renderOut(); return; }
       ST[m][k] = v;
       if (m === 'bus' && k === 'street' && v.includes(',')) { const p = splitPlace(v, ''); ST.bus.suburb = p.suburb; const su = document.querySelector('[data-m="bus"][data-k="suburb"]'); if (su) su.value = p.suburb; }
       if (m === 'bus' && k === 'tpl') { ST.bus.effect = BUS_EFFECT[v]; if (v.startsWith('planned') && !['roadworks', 'event', 'maintenance'].includes(ST.bus.cause)) ST.bus.cause = 'roadworks'; }
+      if (m === 'road' && k === 'event' && !roadScenarios(v).some(x => x[0] === ST.road.scenario)) ST.road.scenario = 'auto';
       if (m === 'ferry' && k === 'tpl') ST.ferry.cause = FERRY_CAUSE[v];
       if (m === 'train' && k === 'format' && v === 'allstop') ST.train.lines = ['EW', 'SC', 'OW'];
       if (e.type === 'change' && RERENDER.has(k)) return render();
